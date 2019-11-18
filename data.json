@@ -1,0 +1,14 @@
+{"Double-Use Instructions": [
+  {"Variable Name": "a1[-1]",
+    "Define-Instruction": ["dispense(aaa)"],
+    "Use-Instruction (Block, Line)": [[1, 6]]},
+  {"Variable Name": "b1[-1]",
+    "Define-Instruction": ["dispense(bbb)"],
+    "Use-Instruction (Block, Line)": [[1, 7]]},
+  {"Variable Name": "c1[-1]",
+    "Define-Instruction": ["dispense(ccc)"],
+    "Use-Instruction (Block, Line)": [[1, 8]]},
+  {"Variable Name": "d1[-1]",
+    "Define-Instruction": ["dispense(ddd)"],
+    "Use-Instruction (Block, Line)": [[1, 8]]}
+]}
