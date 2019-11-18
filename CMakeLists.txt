@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(CS220Synth)
 
-set(YourPath "~/Documents/GitHub/CS220-dmfb-synthesis-skeleton/")
+set(YourPath "/home/warfield/Github/CS220-dmfb-synthesis-skeleton/")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -16,6 +16,7 @@ include_directories(Headers/Router)
 include_directories(Headers/Scheduler)
 include_directories(Headers/Util)
 include_directories(Headers/WireRouter)
+include_directories(Headers/Slicer)
 
 set(CS220Synth_SOURCES
         Source/Models/assay_node.cc
@@ -59,7 +60,9 @@ set(CS220Synth_SOURCES
         Source/WireRouter/paths.cc
         Source/WireRouter/wire_router.cc
         Source/WireRouter/wire_segment.cc
-        Source/main.cc)
+        Source/main.cc
+        Source/Slicer/incoming_graph_parser.cc
+        Source/Slicer/slicer.cc)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${YourPath})
 

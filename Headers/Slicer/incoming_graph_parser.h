@@ -22,34 +22,16 @@
  * Revision History:															*
  * WHO		WHEN		WHAT													*
  * ---		----		----
- * JWM      9/30/19     Creation                                                *
+ * JWM      11/17/19     Creation                                                *
  * FML		MM/DD/YY	One-line description									*
  *----------------------------------------------------------------------------- */
-#ifndef SLICER_H
-#define SLICER_H
 
 /*
- * This class should do the actual slicing in a high level manner, liberal use of helper classes/functions
+ * This Class should take in the JSON data, and add it to a boost graph that the slicer can utilize
  */
 
-#include "dmfb_arch.h"
-#include <string.h>
-#include "structs.h"
-#include "claim.h"
-#include "enums.h"
-#include "pin_mapper.h"
-#include "dag.h"
-class DmfbArch;
-class DAG;
 
-class Slicer {
-    protected:
-        int test;
-    public:
-        Slicer();
-        virtual ~Slicer();
+#ifndef CS220SYNTH_INCOMING_GRAPH_PARSER_H
+#define CS220SYNTH_INCOMING_GRAPH_PARSER_H
 
-
-};
-
-#endif /* SLICER_H */
+#endif //CS220SYNTH_INCOMING_GRAPH_PARSER_H
