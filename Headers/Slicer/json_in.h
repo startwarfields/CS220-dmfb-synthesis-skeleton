@@ -30,10 +30,10 @@
  * This Class should take in the JSON data, and add it to a boost graph that the slicer can utilize
  */
 
-#include <jsoncpp/json/json.h>
 
 #ifndef CS220SYNTH_JSON_IN_H
 #define CS220SYNTH_JSON_IN_H
+#include <jsoncpp/json/json.h>
 
 class JSON_IN {
 protected:

@@ -30,6 +30,7 @@
 #include "dag.h"
 #include <math.h>
 #include <Slicer/slicer.h>
+#include "json_in.h"
 ///////////////////////////////////////////////////////////////////////////////////
 // Constructor
 ///////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +42,19 @@ Slicer::Slicer() {
 // Deconstructor
 ///////////////////////////////////////////////////////////////////////////////////
 Slicer::~Slicer() {
+
+
+}
+void Slicer::preform_slice(Json::Value &data, bool control_flow, bool recursive_function )
+{
+    // Initialize JSON Structure in Readable format
+    JSON_IN * jimmy = new JSON_IN();
+    jimmy->parse_data();
+    // Set the Data input to the JSON structure
+    data = jimmy->root;
+
+    // WE wa
+
 
 
 }

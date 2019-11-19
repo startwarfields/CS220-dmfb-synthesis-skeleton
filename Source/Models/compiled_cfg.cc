@@ -152,8 +152,28 @@ CompiledCFG::~CompiledCFG()
 	delete preRoutingDagsToExecute;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////
+//  DynamicCompile method should essentially perform dynamicExecute
+//  prepending the steps to generate a compiledDag on the fly based on current status
+// we want to have sliceyMcSlice do the the slice generation of the variables that are needed for
+// the current uncompiled dag
+// for dag in uncompiledDags:
+//    for variable in dag:
+//        if variable is none:
+//            slicer.sliceyMcSlice(dag)
+//    compiledDag = dag.compile
+//    compiledDag.simulate
+// Additionally, we may want to loop back to BS Compiler a simple program
+//manifest aaa
+//manifest bbb
+//instructions:
+//a = dispense aaa
+//        b = dispense bbb
+////////////////////////////////////////////////////////////////////////////////////
+// void CompiledCFG::dynamicCompile(){ ....
+
+
+////////////////////////////////////////////////////////////////////////////////////
 // This method is used internally to statically compile the DAGs contained within
 // the CFG. In essence, a new CFG is created which contains compiled information
 // along-side the normal DAG data structures.
@@ -278,6 +298,7 @@ void CompiledCFG::dynamicallyExecute()
 		// First, try to execute the ready dags
 		list<DAG *>::iterator dteIt = dagsToExecute->begin();
 		list<Condition *>::iterator dbfIt = dagBranchedFrom.begin();
+		std::cout << "TODO: Slicer Functionality Should Happen Here" << std::endl;
 		while (dteIt != dagsToExecute->end())
 		{
 			DAG * dag = *dteIt;

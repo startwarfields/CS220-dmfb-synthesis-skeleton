@@ -25,8 +25,10 @@
  * JWM      9/30/19     Creation                                                *
  * FML		MM/DD/YY	One-line description									*
  *----------------------------------------------------------------------------- */
+
 #ifndef SLICER_H
 #define SLICER_H
+#include <jsoncpp/json/json.h>
 
 /*
  * This class should do the actual slicing in a high level manner, liberal use of helper classes/functions
@@ -48,7 +50,7 @@ class Slicer {
     public:
         Slicer();
         virtual ~Slicer();
-
+        void preform_slice(Json::Value &data, bool control_flow = true, bool recursive_function = false );
 
 };
 

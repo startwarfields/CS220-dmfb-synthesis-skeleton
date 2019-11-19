@@ -18,21 +18,20 @@ JSON_IN::~JSON_IN() {
 }
 
 void JSON_IN::parse_data() {
-    bool alive = true;
-    while (alive){
-//        Json::Value root;   // will contains the root value after parsing.
+    //Refactor Soon
+    bool keepGoing = true;
+    while (keepGoing){
         Json::Reader reader;
-        std::ifstream test("data.json", std::ifstream::binary);
-        bool parsingSuccessful = reader.parse( test, root, false );
-        if ( !parsingSuccessful )
+        std::ifstream data("data.json", std::ifstream::binary);
+        bool parsingSuccessful = reader.parse( data, root, false );
+        if (!parsingSuccessful)
         {
-            // report to the user the failure and their locations in the document.
-            std::cout  << reader.getFormattedErrorMessages()
-                       << "\n";
+            std::cout  << reader.getFormattedErrorMessages() << "\n";
         }
 
         std::string encoding = root.get("encoding", "UTF-8" ).asString();
-        std::cout << root << "\n";
-        alive = false;
+
+
+        keepGoing = false;
     }
 }

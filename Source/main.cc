@@ -44,6 +44,8 @@
 #include "file_out.h"
 #include "file_in.h"
 #include "json_in.h"
+#include <jsoncpp/json/json.h>
+
 
 using namespace std;
 
@@ -98,8 +100,7 @@ int main(int argc, char **argv)
 	compiledCFG->execute();
 	compiledCFG->outputSimulationFiles();
 	//Slicer
-    JSON_IN* jimmy = new JSON_IN();
-    jimmy->parse_data();
+
 	delete compiledCFG;
 	delete cfgIn;
 
