@@ -27,7 +27,8 @@
 #include "cfg.h"
 #include "compiled_dag.h"
 #include "synthesis.h"
-
+#include "slicer.h"
+#include "json_in.h"
 class CompiledCFG
 {
 	private:
@@ -56,6 +57,7 @@ class CompiledCFG
 
 		// Methods
 		void staticCompile();
+		void dynamicCompile();
 		void initForExecution();
 		void dynamicallyExecute();
 		void executeCompiledDag(CompiledDAG *cDag, unsigned long long tsOffset, unsigned long long cycleOffset, bool isRoutingDag);

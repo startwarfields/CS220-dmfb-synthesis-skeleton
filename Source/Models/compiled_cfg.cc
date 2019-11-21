@@ -61,8 +61,19 @@ CompiledCFG::CompiledCFG(Synthesis *synthEngine, CFG * cfgToCompile)
 	seed = 1534884714; stringstream ssm; ssm << "MANUAL SEED " << seed << " IS BEING USED TO RE-PRODUCE THIS RUN."; seedMsg = ssm.str(); // To manually set a seed for testing
 
 	srand (seed);
+	//TODO: Some form of determination, likely if data.json is empty or not
 
-	staticCompile();
+    switch(1){
+
+        case 1:
+            staticCompile();
+            break;
+        case 2:
+            dynamicCompile();
+            break;
+    }
+
+
 }
 
 CompiledCFG::~CompiledCFG()
@@ -169,8 +180,92 @@ CompiledCFG::~CompiledCFG()
 //instructions:
 //a = dispense aaa
 //        b = dispense bbb
+
+
+//Needed Test Case
+//manifest aaa
+//manifest bbb
+//instructions:
+//a = dispense aaa
+//        b = dispense bbb
+//if (..) {  // conditional
+//c = mix a with b
+//        dipose c
+//}
+//if (..) {  // unrelated conditional
+//d = mix a with b
+//        dipose d
+//}
 ////////////////////////////////////////////////////////////////////////////////////
-// void CompiledCFG::dynamicCompile(){ ....
+void CompiledCFG::dynamicCompile(){
+
+    // Initalize Slicer, will edit to pass DAGs to modify, then rererun the whole program
+    Slicer * slicey = new Slicer();
+    Json::Value data;
+    slicey->preform_slice(data, true, false);
+/*
+ * Some sort of feedback loop type compilation....
+ */
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////START OF STATIC COPY ///////////////////////////////////////
+
+
+    // In pain, the function cries out for acknowledgement
+    std::cout << "Compiling CFG" << endl << "-----------------------------------------------" << endl;
+
+    // Schedule/map each DAG
+    for (int i = 0; i < uncompiledCFG->allDags.size(); i++) {
+        // Initialize data-structures
+        DAG *uncompiledDAG = uncompiledCFG->allDags.at(i);
+        CompiledDAG *compiledDAG = new CompiledDAG(synthesisEngine, uncompiledDAG);
+        allNodes->push_back(compiledDAG);
+        (*uncompToCompDAG)[uncompiledDAG] = compiledDAG; // Map uncompiled to compiled
+
+        // Schedule initial DAGs
+        compiledDAG->scheduleDAG();
+    }
+
+    // Place/route each DAG, given the schedule
+    for (DAG *uncompiledDAG : uncompiledCFG->allDags) {
+        CompiledDAG *compiledDAG = uncompToCompDAG->at(uncompiledDAG);
+        compiledDAG->placeDAG();
+        if (uncompiledDAG->getAllNodes().size() > 0)
+            compiledDAG->routeDAG();
+    }
+
+    // Now that we have obtained the initial schedules, refactor DAGs to add (pure) routing DAGs
+    for (DAG * uncompiledDAG : uncompiledCFG->allDags)
+    {
+        CompiledDAG * compiledDAG = uncompToCompDAG->at(uncompiledDAG);
+        compiledDAG->generateRoutingDAGs(uncompiledCFG->conditionalGroups, uncompToCompDAG, conditionToRoutingDAGs);
+    }
+
+    // Next, iterate through all the conditional groups to compile the routing DAGs
+    // (they can now pull source/destination info from the normal (non-routing) DAGs
+    cout << "Synthesizing routing DAGs" << endl;
+    for (ConditionalGroup *cg : uncompiledCFG->conditionalGroups)
+    {
+        for (Condition *c : *(cg->getConditions()))
+        {
+            // If found the matching target CompiledDAG, then process
+            map<Condition *, vector<CompiledDAG *> *>::iterator it = conditionToRoutingDAGs->find(c);
+            if (it != conditionToRoutingDAGs->end())
+            {
+                for (CompiledDAG *routingDAG : (*it->second))
+                {
+                    routingDAG->scheduleDAG();
+                    routingDAG->placeDAG();
+                    routingDAG->initTransferLocations(uncompToCompDAG);
+                    routingDAG->routeDAG();
+                }
+            }
+        }
+    }
+    ////////////////////////END OF STATIC COPY /////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////
