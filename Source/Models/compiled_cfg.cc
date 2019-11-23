@@ -199,7 +199,7 @@ CompiledCFG::~CompiledCFG()
 ////////////////////////////////////////////////////////////////////////////////////
 void CompiledCFG::dynamicCompile(){
 
-    // Initalize Slicer, will edit to pass DAGs to modify, then rererun the whole program
+    // Initalize Slicer, will edit to pass DAGs to modify, then rerun the whole program
     Slicer * slicey = new Slicer();
     Json::Value data;
     slicey->preform_slice(data, true, false);
