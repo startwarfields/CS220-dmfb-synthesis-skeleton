@@ -164,6 +164,7 @@ CompiledCFG::~CompiledCFG()
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+// Dynamic Program Slicing for Unbounded Recursive Functions in Microfluidics
 //  DynamicCompile method should essentially perform dynamicExecute
 //  prepending the steps to generate a compiledDag on the fly based on current status
 // we want to have sliceyMcSlice do the the slice generation of the variables that are needed for
@@ -180,7 +181,8 @@ CompiledCFG::~CompiledCFG()
 //instructions:
 //a = dispense aaa
 //        b = dispense bbb
-
+//The primary difference is static vs dynamic compilation —
+//you’re essentially building a just-in-time (jit) backend
 
 //Needed Test Case
 //manifest aaa
@@ -198,11 +200,16 @@ CompiledCFG::~CompiledCFG()
 //}
 ////////////////////////////////////////////////////////////////////////////////////
 void CompiledCFG::dynamicCompile(){
+    // This is Slicy + staticCompile + dynanmicExecute();
+    // Just-In-Time Compilation
+    // we will need to route the droplets to the right location
 
     // Initalize Slicer, will edit to pass DAGs to modify, then rerun the whole program
     Slicer * slicey = new Slicer();
     Json::Value data;
+    //
     slicey->preform_slice(data, true, false);
+    // So now the json data is correctly in a variable we need
 /*
  * Some sort of feedback loop type compilation....
  */
@@ -262,8 +269,261 @@ void CompiledCFG::dynamicCompile(){
             }
         }
     }
-    ////////////////////////END OF STATIC COPY /////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////END OF STATIC COMPILE COPY/////////////////////////////////////////
+    ////////////////////////START OF DYNAMIC EXECUTE COPY//////////////////////////////////////
+    cout << "-----------------------------------------------" << endl;
+    cout << "-----------------Executing CFG-----------------" << endl;
+    cout << "-----------------------------------------------" << endl;
+
+    unsigned long long totalCycles = 0;
+    unsigned long long totalTS = 0;
+    unsigned long long totalPinActivations = 0;
+    map<DAG *, string> executingDagToIfElseFlow;
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Generate CFG flow-chart based on execution path below
+    dagOutputNum = 0;
+    ofstream exPathOut;
+    exPathOut.open("Output/EXECUTION_PATH_CFG.dot");
+    exPathOut<<"digraph G {\n";
+    exPathOut << "node [shape=box, style=\"rounded, filled\"]\n";
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Add initial head Assays to list to execute
+    list<Condition *> dagBranchedFrom; // the corresponding conditon that the dagToExecute came from (NULL if header)
+    list<DAG *>::iterator headIt = uncompiledCFG->heads.begin();
+    for (; headIt != uncompiledCFG->heads.end(); headIt++)
+    {
+        dagsToExecute->push_back(*headIt);
+        dagBranchedFrom.push_back(NULL);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Determine which DAG to execute next
+    while (!dagsToExecute->empty() || !dagsBeingExecuted->empty())
+    {
+        ///////////////////////////////////////
+        // First, try to execute the ready dags
+        list<DAG *>::iterator dteIt = dagsToExecute->begin();
+        list<Condition *>::iterator dbfIt = dagBranchedFrom.begin();
+        std::cout << "TODO: Slicer Functionality Should Happen Here" << std::endl;
+        while (dteIt != dagsToExecute->end())
+        {
+            DAG * dag = *dteIt;
+            Condition *c = *dbfIt;
+
+            // If it still needs to process some conditional groups...
+            if (dag->cgsLeftToProcess.size() == 0)
+            {
+                // Add to dagBeingExecuted list and mark as running
+                dagsBeingExecuted->push_back(dag);
+                dag->status = RUNNING;
+
+                // Grab any pre-routing stage that needs to be run and save
+                if (conditionToRoutingDAGs->count(c))
+                {
+                    if (!conditionToRoutingDAGs->at(c)->empty())
+                    {
+                        claim(conditionToRoutingDAGs->at(c)->size() == 1, "A condition which has more than 1 dependent DAG is not supported in code yet as there were no working benchmarks to test this feature.");
+                        preRoutingDagsToExecute->push_back(conditionToRoutingDAGs->at(c)->front());
+                    }
+                    else
+                        preRoutingDagsToExecute->push_back(NULL);
+                }
+                else
+                    preRoutingDagsToExecute->push_back(NULL);
+
+                // Add the CGs to the dag's personal todoList
+                list<ConditionalGroup *>::iterator cgIt = dag->conditionalGroups.begin();
+                for (; cgIt != dag->conditionalGroups.end(); cgIt++)
+                    dag->cgsLeftToProcess.push_back(*cgIt); // Add to list
+                dagsToExecute->erase(dteIt++);
+                dagBranchedFrom.erase(dbfIt++);
+            }
+            else // else...examine the next ready DAG
+            {
+                dteIt++;
+                dbfIt++;
+            }
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Add pin-activation sequences (and other data for visualization) for DAGs in
+        // executing and mark as RUN_FINISHED
+        list<CompiledDAG *>::iterator prdIt = preRoutingDagsToExecute->begin();
+        for (DAG *executingDAG : *dagsBeingExecuted)
+        {
+            // First, find and execute any pre-routing DAGs
+            CompiledDAG *preRoutingDag = *prdIt;
+            if (preRoutingDag)
+            {
+                executeCompiledDag(preRoutingDag, totalTS, totalCycles, true);
+                unsigned long long dagCycles = preRoutingDag->getNumExecutionCycles();
+                totalCycles += dagCycles;
+                unsigned long long dagTS = preRoutingDag->uncompiledDAG->getMaxOpStartingTS();
+                totalTS += dagTS;
+                unsigned long long dagPins = preRoutingDag->pinActivations->size();
+                totalPinActivations += dagPins;
+                cout << "R" << numDagsExecuted << ") Executing " << preRoutingDag->getPrintableName() << endl;
+                cout << "\t" << dagPins << " sub-assay pin activations; " << totalPinActivations << " total CFG pin activations" << endl;
+                cout << "\t" << dagTS << " sub-assay time-steps; " << totalTS << " total CFG time-steps" << endl;
+                cout << "\t" << dagCycles << " sub-assay execution cycles; " << totalCycles << " total CFG cycles" << endl;
+                addFlowChartTransition(&exPathOut, "(Routing)", preRoutingDag->uncompiledDAG, true, true, true);
+            }
+            cout << "-----------------------------------------------" << endl;
+
+            // Simulate sensor readings, process DAG as executed and add to global
+            // data-structures for one complete visualization
+            executingDAG->SimulateSensorReadings();
+            CompiledDAG *compExecutingDAG = uncompToCompDAG->at(executingDAG);
+            executingDAG->status = RUN_FINISHED;
+            executingDAG->IncrementRunCount();
+            executeCompiledDag(compExecutingDAG, totalTS, totalCycles, false);
+
+            // Print simple statistics for the assay that was just executed
+            unsigned long long dagCycles = compExecutingDAG->getNumExecutionCycles();
+            totalCycles += dagCycles;
+            unsigned long long dagTS = executingDAG->getMaxOpStartingTS();
+            totalTS += dagTS;
+            unsigned long long dagPins = compExecutingDAG->pinActivations->size();
+            totalPinActivations += dagPins;
+            cout << ++numDagsExecuted << ") Executing " << compExecutingDAG->getPrintableName() << endl;
+            cout << "\t" << dagPins << " sub-assay pin activations; " << totalPinActivations << " total CFG pin activations" << endl;
+            cout << "\t" << dagTS << " sub-assay time-steps; " << totalTS << " total CFG time-steps" << endl;
+            cout << "\t" << dagCycles << " sub-assay execution cycles; " << totalCycles << " total CFG cycles" << endl;
+            cout << endl;
+
+            // Add to flow chart
+            map<DAG *, string>::iterator ieIt = executingDagToIfElseFlow.find(compExecutingDAG->uncompiledDAG);
+
+            if (ieIt != executingDagToIfElseFlow.end() && ieIt->second != "")
+            {
+                // Fix \n symbols and remove \t symbols
+                string ifElseFixedForGraphs = ieIt->second;
+                size_t start_pos = 0;
+                while((start_pos = ifElseFixedForGraphs.find("\n", start_pos)) != std::string::npos)
+                {
+                    ifElseFixedForGraphs.replace(start_pos, 1, "\\l");
+                }
+                start_pos = 0;
+
+                addFlowChartTransition(&exPathOut, ifElseFixedForGraphs, compExecutingDAG->uncompiledDAG, false, true, true);
+                executingDagToIfElseFlow[compExecutingDAG->uncompiledDAG] = "";
+            }
+            else
+                addFlowChartTransition(&exPathOut, "(Unknown Condition Met)", compExecutingDAG->uncompiledDAG, false, true, true);
+
+            prdIt++;
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Check if any of the executing dags are done; add appropriate/ready CGs to
+        // processing list
+        list<DAG *>::iterator exIt = dagsBeingExecuted->begin();
+        prdIt = preRoutingDagsToExecute->begin();
+        while (exIt != dagsBeingExecuted->end())
+        {
+            DAG *d = *exIt;
+            if (d->status == RUN_FINISHED)
+            {
+                // If this is a tail, then it can be run again immediately
+                if (d->conditionalGroups.size() == 0)
+                {
+                    d->status = CAN_RUN_AGAIN;
+                    d->ReInitSensorReadings();
+                }
+
+                // If any of d's CGs are ready to be evaluated, add them to the cgsToProcess list
+                list<ConditionalGroup *>::iterator cglIt = d->cgsLeftToProcess.begin();
+                for (; cglIt != d->cgsLeftToProcess.end(); cglIt++)
+                {
+                    ConditionalGroup * cgl = *cglIt;
+
+                    // If all the dependent DAGs are finished, we can evaluate the CG
+                    // The last (Else) condition has all dependents (still true for 1-condition CGs)
+                    Condition * elseCon = cgl->getConditions()->back();
+                    bool canEvaluateCG = true;
+                    list<DAG *>::iterator depIt = elseCon->dependents.begin();
+                    while (depIt != elseCon->dependents.end())
+                    {
+                        if ((*depIt)->status != RUN_FINISHED)
+                            canEvaluateCG = false;
+                        depIt++;
+                    }
+                    if (canEvaluateCG)
+                    {	// Add if unique
+                        cgsToProcess->remove(cgl);
+                        cgsToProcess->push_back(cgl);
+                    }
+                }
+                dagsBeingExecuted->erase(exIt++);
+                preRoutingDagsToExecute->erase(prdIt++);
+            }
+            else
+            {
+                exIt++;
+                prdIt++;
+            }
+        }
+        /////////////////////////////////////////////////////////////////////////////////
+        // Then, process the conditions and add new branching dags to the ready list.
+        // If a CG is in this list, it is ready to be processed.
+        while (!cgsToProcess->empty())
+        {
+            stringstream ifElseFlowResults;
+            ConditionalGroup *cg = cgsToProcess->front();
+            Condition *c = cg->evaluateAndDbPrint(&ifElseFlowResults);
+            if (c && c->branchIfTrue)
+            {
+                dagsToExecute->push_back(c->branchIfTrue);
+                dagBranchedFrom.push_back(c);
+                executingDagToIfElseFlow[c->branchIfTrue] = ifElseFlowResults.str();
+            }
+
+            // Must remove this CG from the dependent dags' "cgsLeftToProcess" lists
+            Condition * elseCond = cg->getConditions()->back();
+            list<DAG *>::iterator depIt2 = elseCond->dependents.begin();
+            for (; depIt2 != elseCond->dependents.end(); depIt2++)
+            {
+                DAG *depDag = *depIt2;
+                depDag->cgsLeftToProcess.remove(cg);
+
+                // If possible, Reset so the DAG can be run again in the future if necessary
+                if (depDag->cgsLeftToProcess.size() == 0 && depDag->status == RUN_FINISHED)
+                {
+                    depDag->status = CAN_RUN_AGAIN;
+                    depDag->ReInitSensorReadings();
+                }
+            }
+            cgsToProcess->pop_front();
+        }
+    } // End of dagsToExecute WHILE-LOOP
+
+
+    cout << "-----------------------------------------------" << endl;
+    cout << "-----------------------------------------------" << endl;
+    cout << "Computing dirty cells..." << std::flush;
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Now that the routes data-structure is properly populated, compute dirty cells
+    synthesisEngine->getRouter()->computeDirtyCells(routes, dirtyCells);
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Close CFG flow-chart based on execution path below
+    exPathOut << "}\n";
+    exPathOut.close();
+
+    cout << "Done." << endl;
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Final output of simple statistics
+    cout << "-----------------------------------------------" << endl;
+    cout << "-----------------------------------------------" << endl;
+    cout << "Total pin activations for CFG:  " << totalPinActivations << endl;
+    cout << "Total scheduled time-steps: " << totalTS << " (" << (totalTS * synthesisEngine->getArch()->getSecPerTS()) << " seconds)" << endl;
+    cout << "Total routing time-steps: " << totalCycles / synthesisEngine->getArch()->getFreqInHz() - totalTS << " (" << (totalCycles / synthesisEngine->getArch()->getFreqInHz()) - (totalTS * synthesisEngine->getArch()->getSecPerTS()) << " seconds)" << endl;
+    cout << "Total execution cycles (scheduled + routing): " << totalCycles << " (" << (totalCycles / synthesisEngine->getArch()->getFreqInHz()) << " seconds)" << endl;
+    cout << seedMsg << endl;
 
 }
 
