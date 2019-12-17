@@ -9,6 +9,6 @@
     "Define-Instruction": ["dispense(ccc)"],
     "Use-Instruction (Block, Line)": [[1, 8]]},
   {"Variable Name": "d1[-1]",
-    "Define-Instruction": ["dispense(ddd)"],
+  "Define-Instruction": ["dispense(ddd)"],
     "Use-Instruction (Block, Line)": [[1, 8]]}
 ]}
