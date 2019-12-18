@@ -65,7 +65,7 @@ class CompiledCFG
 
 	public:
 		// Constructors
-        CompiledCFG::CompiledCFG(Synthesis *synthEngine, CFG * cfgToCompile, bool isStatic);
+        CompiledCFG(Synthesis *synthEngine, CFG * cfgToCompile, bool isStatic);
 		virtual ~CompiledCFG();
 
 		// Getters/Setters

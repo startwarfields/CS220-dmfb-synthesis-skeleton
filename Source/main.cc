@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 	cout << "Executing " << cfg << endl;
 	CFG *cfgIn = FileIn::ReadCfgFromFile(cfg);
 
-	CompiledCFG *compiledCFG = new CompiledCFG(synthesisEngine, cfgIn);
+	CompiledCFG *compiledCFG = new CompiledCFG(synthesisEngine, cfgIn, false);
 
 	compiledCFG->execute();
 	compiledCFG->outputSimulationFiles();

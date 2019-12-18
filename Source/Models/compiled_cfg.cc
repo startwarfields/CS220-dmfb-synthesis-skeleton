@@ -70,7 +70,7 @@ CompiledCFG::CompiledCFG(Synthesis *synthEngine, CFG * cfgToCompile, bool isStat
     }
 
 
-}
+
 
 CompiledCFG::~CompiledCFG()
 {
