@@ -1,0 +1,6 @@
+DagName(DAG2)
+
+NODE (5, MIX, 2, 1, d)
+EDGE (5,4)
+
+NODE (6, OUTPUT, waste, Drain)

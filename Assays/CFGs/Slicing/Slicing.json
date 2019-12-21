@@ -1,0 +1,7 @@
+
+{"Double-Use Instructions": [
+  {
+    "Variable Name": "a1[-1]",
+    "Define-Instruction": ["dispense(aaa)"],
+    "Use-Instruction (Block, Line)": [[3, 1]]
+  }]}

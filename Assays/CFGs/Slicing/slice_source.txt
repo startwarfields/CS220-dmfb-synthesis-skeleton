@@ -1,0 +1,13 @@
+Block: 1
+          a1[-1] = dispense(aaa)
+          b1[-1] = dispense(bbb)
+          c1[-1] = dispense(ccc)
+          Conditional:     (CONST_1 < CONST_2)     T: bsbbif_2_t  F: bsbbif_3_f
+Block: 2
+           d1[-1] = mix(a1[-1], b1[-1])
+           dispose({'name': 'd1', 'offset': -1, 'size': 1, 'var': [main]   d1      {<ChemTypes.MAT: 130>}})
+Block: 3
+           e1[-1] = mix(a1[-1], c1[-1])
+           NOP
+
+

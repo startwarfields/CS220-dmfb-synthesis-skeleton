@@ -199,7 +199,7 @@ void CompiledCFG::dynamicCompile(){
     // This is Slicy + staticCompile + dynanmicExecute();
     // Just-In-Time Compilation
     // we will need to route the droplets to the right location
-
+    std::cout << " HElp Help im being compiled help help!" << std::endl;
     // Initalize Slicer, will edit to pass DAGs to modify, then rerun the whole program
     Slicer * slicey = new Slicer();
     Json::Value data;
