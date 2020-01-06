@@ -1,11 +1,11 @@
 DagName(DAG1)
-NODE(1, DISPENSE, a, 10, aaa)
-EDGE(1, 0)
 
-NODE(2, DISPENSE, b, 10, bbb)
-EDGE(2, 1)
-
-NODE(3, DISPENSE, c, 10, ccc)
-EDGE(3, 2)
-
-NODE (4, OUTPUT, waste, Drain)
+NODE (0, DISPENSE, a, 10, aaa)
+EDGE (0, 4)
+NODE (2, DISPENSE, b, 10, bbb)
+EDGE (2, 5)
+NODE (3, DISPENSE, c, 10, ccc)
+EDGE (3, 6)
+NODE (4, TRANSFER_OUT, a)
+NODE (5, TRANSFER_OUT, b)
+NODE (6, TRANSFER_OUT, c)

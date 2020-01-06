@@ -1,6 +1,8 @@
 DagName(DAG2)
-
-NODE (5, MIX, 2, 1, d)
-EDGE (5,4)
-
-NODE (6, OUTPUT, waste, Drain)
+NODE(7, TRANSFER_IN, a)
+EDGE(7,9)
+NODE(8, TRANSFER_IN, b)
+EDGE(8,9)
+NODE (9, MIX, 2, 1, d)
+EDGE (9,10)
+NODE (10, TRANSFER_OUT, d)
