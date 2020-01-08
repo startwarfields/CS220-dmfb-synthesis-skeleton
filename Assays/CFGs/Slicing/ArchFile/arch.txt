@@ -6,6 +6,13 @@ Input (north, 2, 2, a)
 Input (north, 4, 2, b)
 Input (north, 6, 2, c)
 
+//Top-right
+EXTERNAL (DETECT, 9, 2, 12, 4)
+//Top-Middle-left
+EXTERNAL (HEAT, 2, 6, 5, 8)
+//Top-Middle-right
+EXTERNAL (HEAT, 9, 6, 12, 8)
+//Bottom-Middle-left
 Output (east, 2, 0, output)
 Output (east, 4, 0, waste, true)
 Output (east, 6, 0, e)
