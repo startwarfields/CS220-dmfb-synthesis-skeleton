@@ -1,0 +1,21 @@
+module mod
+manifest aaa
+manifest bbb
+manifest ccc
+
+functions:
+
+instructions:
+
+a = dispense aaa
+b = dispense bbb
+c = dispense ccc
+x = detect mod on a
+heat b
+heat c
+if (x < 1) {
+   b = mix a with b
+}
+d = mix a with b
+e = mix d with c
+drain e
